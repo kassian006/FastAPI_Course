@@ -1,6 +1,6 @@
 import fastapi
 from fastapi import FastAPI
-from api.endpoints import auth, categories, courses, users, lessons, exams, questions, certificates
+from api.endpoints import auth, categories, courses, users, lessons, exams, questions, certificates, social_auth
 import redis
 import uvicorn
 from admin.setup import setup_admin
@@ -8,6 +8,8 @@ from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter
 from contextlib import asynccontextmanager
 import redis.asyncio as redis
+from starlette.middleware.sessions import SessionMiddleware
+from course_app.config import SECRET_KEY
 
 
 async def init_redis():
@@ -22,6 +24,7 @@ async def lifespan(app: FastAPI):
     await redis.close()
 
 course_app = fastapi.FastAPI(title='Course site', lifespan=lifespan)
+course_app.add_middleware(SessionMiddleware, secret_key="SECRET_KEY")
 setup_admin(course_app)
 
 course_app.include_router(auth.auth_router, tags=["Auth"])
@@ -32,6 +35,8 @@ course_app.include_router(lessons.lesson_router, tags=["Lessons"])
 course_app.include_router(exams.exam_router, tags=["Exams"])
 course_app.include_router(questions.question_router, tags=["Questions"])
 course_app.include_router(certificates.certificate_router, tags=["Certificates"])
+course_app.include_router(social_auth.social_router)
+
 
 
 # def verify_password(plain_password, hashed_password):
