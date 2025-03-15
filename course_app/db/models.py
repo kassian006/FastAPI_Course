@@ -38,6 +38,8 @@ class UserProfile(Base):
     courses: Mapped[List["Course"]] = relationship("Course", back_populates="author")
     tokens: Mapped[List["RefreshToken"]] = relationship("RefreshToken", back_populates="user",
                                                         cascade="all, delete-orphan")
+    user_cart: Mapped["Cart"] = relationship('Cart', back_populates='users',
+                                             uselist=False)
 
     def set_password(self, password: str):
         self.hashed_password = bcrypt.hash(password)
@@ -121,3 +123,24 @@ class Certificate(Base):
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
     issued_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     certificate_url: Mapped[str] = mapped_column(String)
+
+
+class Cart(Base):
+    __tablename__ = "cart"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey('user_profiles.id'), unique=True)
+    users: Mapped['UserProfile'] = relationship('UserProfile', back_populates='user_cart')
+    items: Mapped[List['CartItem']] = relationship('CartItem', back_populates='cart_item',
+                                                   cascade='all, delete-orphan')
+
+
+class CartItem(Base):
+    __tablename__ = "cartitem"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    cart: Mapped[int] = mapped_column(ForeignKey('cart.id'))
+    cart_item: Mapped['Cart'] = relationship('Cart', back_populates='items')
+    course_id: Mapped[int] = mapped_column(ForeignKey('courses.id'))
+    course: Mapped['Course'] = relationship('Course')
+

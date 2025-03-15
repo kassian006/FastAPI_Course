@@ -8,8 +8,8 @@ from passlib.context import CryptContext
 from fastapi_limiter.depends import RateLimiter
 
 
-from course_app.db.models import UserProfile, RefreshToken
-from course_app.db.schema import UserProfileSchema
+from course_app.db.models import UserProfile, RefreshToken, Cart
+from course_app.db.schema import UserProfileSchema, CartSchema
 from course_app.db.database import SessionLocal
 from course_app.config import SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS, ALGORITHM
 
@@ -66,6 +66,11 @@ async def register(user: UserProfileSchema, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    new_cart = Cart(user_id=new_user.id)
+    db.add(new_cart)
+    db.commit()
+
     return {"message": 'Saved'}
 
 

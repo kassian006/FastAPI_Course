@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from course_app.db.models import UserRole, StatusCourse, TypeCourse
 
@@ -82,3 +82,23 @@ class CertificateSchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class CartItemSchema(BaseModel):
+    id: int
+    cart: int
+    course_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CartSchema(BaseModel):
+    id: int
+    user_id: int
+    items: List[CartItemSchema] = []
+
+    class Config:
+        from_attributes = True
+
+
